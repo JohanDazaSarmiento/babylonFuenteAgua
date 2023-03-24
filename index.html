@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://preview.babylonjs.com/ammo.js"></script>
+        <script src="https://preview.babylonjs.com/cannon.js"></script>
+        <script src="https://preview.babylonjs.com/Oimo.js"></script>
+        <script src="https://preview.babylonjs.com/earcut.min.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://preview.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        var createScene = function () {
+    var scene = new BABYLON.Scene(engine);
+
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+    camera.setTarget(BABYLON.Vector3.Zero());
+    camera.attachControl(canvas, true);
+
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    light.intensity = 0.7;
+
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+
+    // Crear un sistema de partículas para la lluvia
+    var rain = new BABYLON.ParticleSystem("rain", 2000, scene);
+
+    // Textura de partículas de lluvia
+    rain.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/raindrop.png", scene);
+
+    // Origen de las partículas de lluvia
+    rain.emitter = new BABYLON.Vector3(0, 10, 0); 
+
+    // Tasa de creación de partículas de lluvia
+    rain.emitRate = 1000; 
+
+    // Tiempo de vida de las partículas de lluvia
+    rain.minLifeTime = 0.3;
+    rain.maxLifeTime = 1.5;
+
+    // Velocidad de las partículas de lluvia
+    rain.minEmitPower = 1;
+    rain.maxEmitPower = 3;
+
+    // Dirección de las partículas de lluvia
+    rain.direction1 = new BABYLON.Vector3(-1, -5, 0);
+    rain.direction2 = new BABYLON.Vector3(1, -5, 0);
+
+    // Ángulo de apertura del cono de emisión de partículas
+    rain.minEmitBox = new BABYLON.Vector3(-0.5, 0, -0.5);
+    rain.maxEmitBox = new BABYLON.Vector3(0.5, 0, 0.5);
+
+    // Color de las partículas de lluvia
+    rain.color1 = new BABYLON.Color4(0, 0.5, 1, 1); // azul claro
+    rain.color2 = new BABYLON.Color4(0, 0.25, 0.5, 1); // azul oscuro
+    rain.colorDead = new BABYLON.Color4(0, 0, 0, 0);
+
+    // Aplicar gravedad a las partículas de lluvia
+    rain.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+    // Iniciar el sistema de partículas de lluvia
+    rain.start();
+
+    return scene;
+};
+
+                window.initFunction = async function() {
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {sceneToRender = scene                    
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
